@@ -126,13 +126,13 @@ struct __stopwatch__ {
 }
 
 #define GET_TIME(name) (__TYPE(name) == THREADED ? (__SW(name).opaque)->sum : __SW(name).sum)
-#define GET_SEC(name) (__SOURCE(name) == TSC ? GET_TIME(name) / (double) FREQ : GET_TIME(name) / 1e6)
-#define GET_USEC(name) (__SOURCE(name) == TSC ? GET_TIME(name) / ((double) FREQ / 1e6) : (double) GET_TIME(name))
+#define GET_SEC(name) (__SOURCE(name) == TSC ? GET_TIME(name) / (double) FREQ : GET_TIME(name) / 1e9)
+#define GET_USEC(name) (__SOURCE(name) == TSC ? GET_TIME(name) / ((double) FREQ / 1e9) : (double) GET_TIME(name))
 #define GET_COUNT(name) (__TYPE(name) == THREADED ? (__SW(name).opaque)->count : __SW(name).count)
 
 #define GET_THREAD_TIME(name) (__SW(name).psum)
-#define GET_THREAD_SEC(name) (__SOURCE(name) == TSC ? GET_THREAD_TIME(name) / (double) FREQ : GET_THREAD_TIME(name) / 1e6)
-#define GET_THREAD_USEC(name) (__SOURCE(name) == TSC ? GET_THREAD_TIME(name) / ((double) FREQ / 1e6) : (double)GET_THREAD_TIME(name))
+#define GET_THREAD_SEC(name) (__SOURCE(name) == TSC ? GET_THREAD_TIME(name) / (double) FREQ : GET_THREAD_TIME(name) / 1e9)
+#define GET_THREAD_USEC(name) (__SOURCE(name) == TSC ? GET_THREAD_TIME(name) / ((double) FREQ / 1e9) : (double)GET_THREAD_TIME(name))
 #define GET_THREAD_COUNT(name) (__SW(name).pcount)
 
 // Old version of GCC does not have atomic builtins. For better portability
@@ -158,9 +158,9 @@ static void sync_stopwatch(struct __stopwatch__ *stopwatch) {
 }
 
 inline static uint64_t get_usec(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return 1000000 * tv.tv_sec + tv.tv_usec;
+    struct timespec tv;
+    clock_gettime(CLOCK_REALTIME, &tv);
+    return 1000000000 * tv.tv_sec + tv.tv_nsec;
 }
 
 static inline __attribute__((always_inline)) uint64_t get_tsc(void) {
